@@ -14,13 +14,13 @@ export default function Sidebar({
   clearAllDocuments
 }) {
   return (
-    <aside className="w-80 bg-secondary border-r border-borderDark p-6 flex flex-col gap-6 overflow-y-auto">
+    <aside className="w-80 bg-secondary border-r border-borderDark p-6 flex flex-col gap-6 h-full overflow-hidden">
       {/* Document Upload */}
       <div className="bg-cardbg border border-borderDark rounded-xl p-6 shadow-md transition hover:border-border-hover">
         <h3 className="font-display text-sm font-semibold mb-4 text-white flex items-center gap-2">
           <Upload size={16} /> Ingest Pile
         </h3>
-        <div 
+        <div
           className="border-2 border-dashed border-borderDark rounded-lg p-6 text-center cursor-pointer transition bg-cardbg/30 hover:border-accentGold hover:bg-cardbg/50"
           onDragOver={handleDragOver}
           onDrop={handleDrop}
@@ -29,10 +29,10 @@ export default function Sidebar({
           <FileText className="text-gray-500 w-8 h-8 mx-auto mb-3" />
           <p className="text-xs font-semibold">Drag files here</p>
           <p className="text-[10px] text-gray-500 mt-1">or click to browse</p>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
             onChange={handleFileChange}
             accept=".pdf,.txt"
           />
@@ -51,7 +51,7 @@ export default function Sidebar({
             <FileText size={16} /> Document Library
           </h3>
           {documents.length > 0 && (
-            <button 
+            <button
               onClick={clearAllDocuments}
               className="text-[10px] text-gray-400 hover:text-red-400 font-semibold transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={activeRunId !== null}
@@ -73,15 +73,14 @@ export default function Sidebar({
                   <span className="text-xs font-medium truncate" title={doc.filename}>{doc.filename}</span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold border ${
-                    doc.file_type === 'contract' ? 'bg-indigo-950/20 border-indigo-500/30 text-indigo-400' :
-                    doc.file_type === 'invoice' ? 'bg-sky-950/20 border-sky-500/30 text-sky-400' :
-                    doc.file_type === 'amendment' ? 'bg-amber-950/20 border-amber-500/30 text-amber-400' :
-                    'bg-gray-800 border-gray-700 text-gray-400'
-                  }`}>
+                  <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold border ${doc.file_type === 'contract' ? 'bg-indigo-950/20 border-indigo-500/30 text-indigo-400' :
+                      doc.file_type === 'invoice' ? 'bg-sky-950/20 border-sky-500/30 text-sky-400' :
+                        doc.file_type === 'amendment' ? 'bg-amber-950/20 border-amber-500/30 text-amber-400' :
+                          'bg-gray-800 border-gray-700 text-gray-400'
+                    }`}>
                     {doc.file_type}
                   </span>
-                  <button 
+                  <button
                     onClick={() => deleteDocument(doc.id)}
                     className="text-gray-500 hover:text-red-400 transition p-0.5 rounded hover:bg-red-950/10 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                     title="Remove document"
@@ -94,8 +93,8 @@ export default function Sidebar({
             ))
           )}
         </div>
-        
-        <button 
+
+        <button
           className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition bg-gradient-to-r from-accentGold to-accentGoldHover hover:scale-[1.01] hover:brightness-110 shadow-glow text-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           onClick={startAudit}
           disabled={documents.length === 0 || activeRunId !== null}
