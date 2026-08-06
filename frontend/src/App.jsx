@@ -214,6 +214,29 @@ function App() {
       alert("Error starting run.");
     }
   };
+  
+  const deleteDocument = async (docId) => {
+    try {
+      const res = await fetch(`${API_BASE}/documents/${docId}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchDocuments();
+      }
+    } catch (e) {
+      console.error("Failed to delete document", e);
+    }
+  };
+
+  const clearAllDocuments = async () => {
+    if (!window.confirm("Are you sure you want to clear your entire document library?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/documents`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchDocuments();
+      }
+    } catch (e) {
+      console.error("Failed to clear library", e);
+    }
+  };
 
   const resolveConflict = async (conflictId, decision) => {
     try {
@@ -298,6 +321,8 @@ function App() {
           handleFileChange={handleFileChange}
           startAudit={startAudit}
           activeRunId={activeRunId}
+          deleteDocument={deleteDocument}
+          clearAllDocuments={clearAllDocuments}
         />
 
         <main className="flex-1 p-8 flex flex-col gap-8 overflow-y-auto bg-primary">

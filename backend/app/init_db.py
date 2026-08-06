@@ -20,6 +20,12 @@ def init_database():
     
     print("Creating tables...")
     Base.metadata.create_all(bind=engine)
+    
+    # Auto-recover/reset any ghost "running" states from previous terminated processes
+    print("Recovering database state: resetting ghost run statuses...")
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE runs SET status = 'failed' WHERE status = 'running';"))
+        
     print("Database initialization completed successfully!")
 
 if __name__ == "__main__":

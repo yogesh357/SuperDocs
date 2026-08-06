@@ -76,3 +76,35 @@ def list_documents(db: Session = Depends(get_db)):
         "file_type": d.file_type,
         "uploaded_at": d.uploaded_at
     } for d in docs]
+
+@router.delete("/{doc_id}")
+def delete_document(doc_id: uuid.UUID, db: Session = Depends(get_db)):
+    doc = db.query(Document).filter(Document.id == doc_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Remove file from disk if exists
+    if os.path.exists(doc.file_path):
+        try:
+            os.remove(doc.file_path)
+        except Exception as e:
+            print(f"Failed to delete file from disk: {e}")
+            
+    db.delete(doc)
+    db.commit()
+    return {"status": "deleted", "id": str(doc_id)}
+
+@router.delete("")
+def clear_all_documents(db: Session = Depends(get_db)):
+    docs = db.query(Document).all()
+    deleted_count = 0
+    for doc in docs:
+        if os.path.exists(doc.file_path):
+            try:
+                os.remove(doc.file_path)
+            except Exception as e:
+                print(f"Failed to delete file from disk: {e}")
+        db.delete(doc)
+        deleted_count += 1
+    db.commit()
+    return {"status": "cleared", "count": deleted_count}
