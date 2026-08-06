@@ -80,11 +80,6 @@ def run_agent_graph(run_id: str):
 
 @router.post("")
 def start_run(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    # Check if a run is already active/running
-    active_run = db.query(Run).filter(Run.status == "running").first()
-    if active_run:
-        raise HTTPException(status_code=400, detail=f"Another run is already running: {active_run.id}")
-        
     run = Run(
         id=uuid.uuid4(),
         status="running",
