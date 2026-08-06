@@ -9,9 +9,7 @@ from backend.app.config import settings
 
 # Configure Gemini API
 genai.configure(api_key=settings.GEMINI_API_KEY)
-
-# Gemini 1.5 pricing (approximate per million tokens for cost logging)
-# Input: $0.075 / 1M tokens, Output: $0.30 / 1M tokens (Free tier is $0, but we log standard cost)
+ 
 GEMINI_COSTS = {
     "gemini-flash-latest": {"input": 0.075 / 1_000_000, "output": 0.30 / 1_000_000},
     "gemini-1.5-flash": {"input": 0.075 / 1_000_000, "output": 0.30 / 1_000_000},

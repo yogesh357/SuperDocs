@@ -12,7 +12,6 @@ from backend.app.models import Run, RunStage, Document, DocumentChunk, Deliverab
 from backend.app.agent.state import AgentState
 from backend.app.agent.utils import extract_text_from_file, call_gemini_structured
 
-# --- Pydantic Schemas for Gemini Structured Outputs ---
 
 class DocumentClassifySchema(BaseModel):
     file_type: str = Field(description="Must be one of: 'contract', 'amendment', 'invoice'")
