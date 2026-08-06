@@ -18,6 +18,16 @@ def init_database():
     else:
         print("pgvector bypass enabled (USE_PGVECTOR=false). Skipping pgvector extension creation.")
     
+    # Apply migrations if tables already exist
+    print("Applying schema migrations...")
+    with engine.begin() as conn:
+        try:
+            conn.execute(text("ALTER TABLE documents ADD COLUMN IF NOT EXISTS session_id VARCHAR(255);"))
+            conn.execute(text("ALTER TABLE runs ADD COLUMN IF NOT EXISTS session_id VARCHAR(255);"))
+            conn.execute(text("ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_file_hash_key;"))
+        except Exception as mig_err:
+            print(f"Migration note: {mig_err}")
+
     print("Creating tables...")
     Base.metadata.create_all(bind=engine)
     
