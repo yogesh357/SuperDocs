@@ -20,13 +20,21 @@ function App() {
   const [deliverable, setDeliverable] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [backendStatus, setBackendStatus] = useState('connecting');
+  const [sessionId] = useState(() => {
+    let sid = sessionStorage.getItem("superdocs_session_id");
+    if (!sid) {
+      sid = crypto.randomUUID();
+      sessionStorage.setItem("superdocs_session_id", sid);
+    }
+    return sid;
+  });
   
   const fileInputRef = useRef(null);
   const pollIntervalRef = useRef(null);
 
   // Check backend connection and fetch initial data
   useEffect(() => {
-    fetch(`${API_BASE}/runs`)
+    fetch(`${API_BASE}/runs?session_id=${sessionId}`)
       .then(res => {
         if (res.ok) {
           setBackendStatus('connected');
@@ -70,7 +78,7 @@ function App() {
 
   const fetchDocuments = async () => {
     try {
-      const res = await fetch(`${API_BASE}/documents`);
+      const res = await fetch(`${API_BASE}/documents?session_id=${sessionId}`);
       if (res.ok) {
         const data = await res.json();
         setDocuments(data);
@@ -107,7 +115,7 @@ function App() {
 
   const fetchRunsList = async () => {
     try {
-      const res = await fetch(`${API_BASE}/runs`);
+      const res = await fetch(`${API_BASE}/runs?session_id=${sessionId}`);
       if (res.ok) {
         const data = await res.json();
         setRuns(data);
@@ -177,7 +185,7 @@ function App() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch(`${API_BASE}/documents`, {
+      const res = await fetch(`${API_BASE}/documents?session_id=${sessionId}`, {
         method: 'POST',
         body: formData,
       });
@@ -200,7 +208,7 @@ function App() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/runs`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/runs?session_id=${sessionId}`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         setActiveRunId(data.id);
@@ -229,7 +237,7 @@ function App() {
   const clearAllDocuments = async () => {
     if (!window.confirm("Are you sure you want to clear your entire document library?")) return;
     try {
-      const res = await fetch(`${API_BASE}/documents`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/documents?session_id=${sessionId}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchDocuments();
       }

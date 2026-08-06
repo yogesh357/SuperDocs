@@ -13,7 +13,7 @@ UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.pat
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("")
-def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_document(session_id: str = None, file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Validate extension
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in [".pdf", ".txt"]:
@@ -27,8 +27,8 @@ def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db))
             
         file_hash = get_file_hash(temp_path)
         
-        # Check if hash already exists in DB
-        existing = db.query(Document).filter(Document.file_hash == file_hash).first()
+        # Check if hash already exists in DB for this session
+        existing = db.query(Document).filter(Document.file_hash == file_hash, Document.session_id == session_id).first()
         if existing:
             # Clean up temp file
             os.remove(temp_path)
@@ -47,6 +47,7 @@ def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db))
         # Create database record
         doc = Document(
             id=uuid.uuid4(),
+            session_id=session_id,
             filename=file.filename,
             file_type="unknown",  # Will be classified by the agent loop
             file_hash=file_hash,
@@ -68,8 +69,11 @@ def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db))
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 @router.get("")
-def list_documents(db: Session = Depends(get_db)):
-    docs = db.query(Document).all()
+def list_documents(session_id: str = None, db: Session = Depends(get_db)):
+    if session_id:
+        docs = db.query(Document).filter(Document.session_id == session_id).all()
+    else:
+        docs = db.query(Document).all()
     return [{
         "id": str(d.id),
         "filename": d.filename,
@@ -95,8 +99,12 @@ def delete_document(doc_id: uuid.UUID, db: Session = Depends(get_db)):
     return {"status": "deleted", "id": str(doc_id)}
 
 @router.delete("")
-def clear_all_documents(db: Session = Depends(get_db)):
-    docs = db.query(Document).all()
+def clear_all_documents(session_id: str = None, db: Session = Depends(get_db)):
+    if session_id:
+        docs = db.query(Document).filter(Document.session_id == session_id).all()
+    else:
+        docs = db.query(Document).all()
+        
     deleted_count = 0
     for doc in docs:
         if os.path.exists(doc.file_path):

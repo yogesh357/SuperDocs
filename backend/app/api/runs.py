@@ -14,8 +14,12 @@ def run_agent_graph(run_id: str):
         if not run:
             return
         
-        # Load all documents
-        docs = db.query(Document).all()
+        # Load documents belonging to this session
+        if run.session_id:
+            docs = db.query(Document).filter(Document.session_id == run.session_id).all()
+        else:
+            docs = db.query(Document).all()
+            
         doc_list = [{
             "id": str(d.id),
             "filename": d.filename,
@@ -79,9 +83,10 @@ def run_agent_graph(run_id: str):
         db.close()
 
 @router.post("")
-def start_run(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def start_run(background_tasks: BackgroundTasks, session_id: str = None, db: Session = Depends(get_db)):
     run = Run(
         id=uuid.uuid4(),
+        session_id=session_id,
         status="running",
         current_stage="Document Classification",
         graph_state=None
@@ -100,8 +105,11 @@ def start_run(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     }
 
 @router.get("")
-def list_runs(db: Session = Depends(get_db)):
-    runs = db.query(Run).order_by(Run.created_at.desc()).all()
+def list_runs(session_id: str = None, db: Session = Depends(get_db)):
+    if session_id:
+        runs = db.query(Run).filter(Run.session_id == session_id).order_by(Run.created_at.desc()).all()
+    else:
+        runs = db.query(Run).order_by(Run.created_at.desc()).all()
     return [{
         "id": str(r.id),
         "status": r.status,

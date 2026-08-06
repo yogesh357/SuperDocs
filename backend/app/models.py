@@ -9,6 +9,7 @@ class Run(Base):
     __tablename__ = "runs"
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4)
+    session_id = Column(String(255), nullable=True)
     status = Column(String(50), nullable=False, default="pending")  # pending, running, paused, completed, failed
     current_stage = Column(String(100), nullable=True)
     graph_state = Column(JSON, nullable=True)
@@ -39,9 +40,10 @@ class Document(Base):
     __tablename__ = "documents"
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4)
+    session_id = Column(String(255), nullable=True)
     filename = Column(String(255), nullable=False)
     file_type = Column(String(50), nullable=False)  # contract, amendment, invoice
-    file_hash = Column(String(64), nullable=False, unique=True)
+    file_hash = Column(String(64), nullable=False)
     file_path = Column(String(512), nullable=False)
     uploaded_at = Column(DateTime, server_default=func.now())
 
