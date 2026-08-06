@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary text-[#F3F4F6] font-body antialiased overflow-x-hidden;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #080A10;
+}
+::-webkit-scrollbar-thumb {
+  background: #262E4D;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3C4875;
+}
+
+/* Custom markdown parsing classes for deliverable display */
+.deliverable-preview h1,
+.deliverable-preview h2,
+.deliverable-preview h3 {
+  @apply font-display text-white mt-4 mb-2 font-semibold;
+}
+
+.deliverable-preview h1 {
+  @apply border-b border-borderDark pb-2 text-2xl;
+}
+
+.deliverable-preview h2 {
+  @apply text-xl;
+}
+
+.deliverable-preview h3 {
+  @apply text-lg;
+}
+
+.deliverable-preview table {
+  @apply w-full border-collapse my-4;
+}
+
+.deliverable-preview th,
+.deliverable-preview td {
+  @apply border border-borderDark p-2 text-left text-sm;
+}
+
+.deliverable-preview th {
+  @apply bg-secondary font-semibold text-white;
+}
+
+.deliverable-preview ul {
+  @apply list-disc list-inside my-2 pl-4;
+}
+
+.deliverable-preview li {
+  @apply text-sm text-gray-300 my-1;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+.status-pulse-anim {
+  animation: pulse 1.5s infinite alternate;
+}
