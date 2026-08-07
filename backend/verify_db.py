@@ -69,6 +69,7 @@ def bootstrap_database():
                 conn.execute(text("ALTER TABLE documents ADD COLUMN IF NOT EXISTS session_id VARCHAR(255);"))
                 conn.execute(text("ALTER TABLE runs ADD COLUMN IF NOT EXISTS session_id VARCHAR(255);"))
                 conn.execute(text("ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_file_hash_key;"))
+                conn.execute(text("ALTER TABLE substitution_runs ADD COLUMN IF NOT EXISTS job_id VARCHAR(255);"))
             except Exception as mig_err:
                 print(f"Migration note: {mig_err}")
                 

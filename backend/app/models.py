@@ -110,3 +110,23 @@ class ComplianceFinding(Base):
     resolved_at = Column(DateTime, nullable=True)
 
     run = relationship("Run", back_populates="compliance_findings")
+
+
+class SubstitutionRun(Base):
+    __tablename__ = "substitution_runs"
+
+    id = Column(Uuid, primary_key=True, default=uuid.uuid4)
+    session_id = Column(String(255), nullable=False)
+    job_id = Column(String(255), nullable=True)
+    status = Column(String(50), nullable=False, default="uploading")  # uploading, analyzing, awaiting_approval, approved, rejected, failed
+    spec_doc_id = Column(String(255), nullable=True)
+    schedule_doc_id = Column(String(255), nullable=True)
+    cutsheet_filename = Column(String(255), nullable=True)
+    spec_filename = Column(String(255), nullable=True)
+    schedule_filename = Column(String(255), nullable=True)
+    comparison_report = Column(Text, nullable=True)
+    response_letter = Column(Text, nullable=True)
+    pending_changes = Column(JSON, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+

@@ -1,0 +1,6 @@
+PROJECT FINISH SCHEDULE
+
+ROOM | MATERIAL | SPEC SECTION | MANUFACTURER | PRODUCT | STATUS
+--- | --- | --- | --- | --- | ---
+Lobby | Ceramic Tile | 09 30 00 | SpecTile Inc. | GrandClassic | SPECIFIED
+Hallway | Ceramic Tile | 09 30 00 | SpecTile Inc. | GrandClassic | SPECIFIED

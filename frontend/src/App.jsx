@@ -7,6 +7,7 @@ import RunTracker from './components/RunTracker';
 import ConflictResolver from './components/ConflictResolver';
 import ComplianceBoard from './components/ComplianceBoard';
 import ReconciliationBrief from './components/ReconciliationBrief';
+import SubstitutionAuditor from './components/SubstitutionAuditor';
 
 const API_BASE = 'http://localhost:8000/api';
 
@@ -20,6 +21,7 @@ function App() {
   const [deliverable, setDeliverable] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [backendStatus, setBackendStatus] = useState('connecting');
+  const [activeTab, setActiveTab] = useState('compliance');
   const [sessionId] = useState(() => {
     let sid = sessionStorage.getItem("superdocs_session_id");
     if (!sid) {
@@ -317,79 +319,83 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <Header backendStatus={backendStatus} />
+      <Header backendStatus={backendStatus} activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        <Sidebar 
-          documents={documents}
-          isUploading={isUploading}
-          fileInputRef={fileInputRef}
-          handleDragOver={handleDragOver}
-          handleDrop={handleDrop}
-          handleFileChange={handleFileChange}
-          startAudit={startAudit}
-          activeRunId={activeRunId}
-          deleteDocument={deleteDocument}
-          clearAllDocuments={clearAllDocuments}
-        />
+      {activeTab === 'compliance' ? (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <Sidebar 
+            documents={documents}
+            isUploading={isUploading}
+            fileInputRef={fileInputRef}
+            handleDragOver={handleDragOver}
+            handleDrop={handleDrop}
+            handleFileChange={handleFileChange}
+            startAudit={startAudit}
+            activeRunId={activeRunId}
+            deleteDocument={deleteDocument}
+            clearAllDocuments={clearAllDocuments}
+          />
 
-        <main className="flex-1 p-8 flex flex-col gap-8 overflow-y-auto bg-primary">
-          <RunTracker activeRun={activeRun} getStageStatus={getStageStatus} />
+          <main className="flex-1 p-8 flex flex-col gap-8 overflow-y-auto bg-primary">
+            <RunTracker activeRun={activeRun} getStageStatus={getStageStatus} />
 
-          <ConflictResolver conflicts={conflicts} resolveConflict={resolveConflict} />
+            <ConflictResolver conflicts={conflicts} resolveConflict={resolveConflict} />
 
-          <ComplianceBoard findings={findings} resolveFinding={resolveFinding} />
+            <ComplianceBoard findings={findings} resolveFinding={resolveFinding} />
 
-          {activeRun && activeRun.status === 'paused' && (
-            <button 
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold cursor-pointer transition bg-emerald-600 text-white hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleResume}
-              disabled={!canResume}
-            >
-              <RefreshCw size={14} className={canResume ? "animate-spin" : ""} />
-              {canResume 
-                ? 'All Items Decided. Resume Audit Process' 
-                : `Awaiting Decisions (${pendingConflictsCount} conflicts, ${pendingFindingsCount} compliance checks pending)`
-              }
-            </button>
-          )}
+            {activeRun && activeRun.status === 'paused' && (
+              <button 
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold cursor-pointer transition bg-emerald-600 text-white hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleResume}
+                disabled={!canResume}
+              >
+                <RefreshCw size={14} className={canResume ? "animate-spin" : ""} />
+                {canResume 
+                  ? 'All Items Decided. Resume Audit Process' 
+                  : `Awaiting Decisions (${pendingConflictsCount} conflicts, ${pendingFindingsCount} compliance checks pending)`
+                }
+              </button>
+            )}
 
-          <ReconciliationBrief deliverable={deliverable} formatMarkdown={formatMarkdown} />
+            <ReconciliationBrief deliverable={deliverable} formatMarkdown={formatMarkdown} />
 
-          {/* Historical list */}
-          {!activeRun && runs.length > 0 && (
-            <div className="bg-cardbg border border-borderDark rounded-xl p-6 shadow-md">
-              <h3 className="font-display text-sm font-semibold mb-4 text-white">Audit History</h3>
-              <div className="flex flex-col gap-2">
-                {runs.map(run => (
-                  <div key={run.id} className="flex justify-between items-center p-4 bg-secondary rounded-lg border border-borderDark">
-                    <div>
-                      <span className="font-semibold text-xs text-white">Run {run.id.substring(0, 8)}...</span>
-                      <div className="text-[10px] text-gray-500 mt-1">{new Date(run.created_at).toLocaleString()}</div>
+            {/* Historical list */}
+            {!activeRun && runs.length > 0 && (
+              <div className="bg-cardbg border border-borderDark rounded-xl p-6 shadow-md">
+                <h3 className="font-display text-sm font-semibold mb-4 text-white">Audit History</h3>
+                <div className="flex flex-col gap-2">
+                  {runs.map(run => (
+                    <div key={run.id} className="flex justify-between items-center p-4 bg-secondary rounded-lg border border-borderDark">
+                      <div>
+                        <span className="font-semibold text-xs text-white">Run {run.id.substring(0, 8)}...</span>
+                        <div className="text-[10px] text-gray-500 mt-1">{new Date(run.created_at).toLocaleString()}</div>
+                      </div>
+                      <div className="flex gap-4 items-center">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
+                          run.status === 'completed' ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400' : 'bg-red-950/20 border-red-500/30 text-red-400'
+                        }`}>
+                          {run.status}
+                        </span>
+                        <button 
+                          className="px-3 py-1.5 rounded text-xs font-semibold bg-borderDark text-white border border-borderDark hover:border-border-hover hover:bg-cardbg transition"
+                          onClick={() => {
+                            setActiveRunId(run.id);
+                            setDeliverable(null);
+                          }}
+                        >
+                          Open Details
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-4 items-center">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
-                        run.status === 'completed' ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400' : 'bg-red-950/20 border-red-500/30 text-red-400'
-                      }`}>
-                        {run.status}
-                      </span>
-                      <button 
-                        className="px-3 py-1.5 rounded text-xs font-semibold bg-borderDark text-white border border-borderDark hover:border-border-hover hover:bg-cardbg transition"
-                        onClick={() => {
-                          setActiveRunId(run.id);
-                          setDeliverable(null);
-                        }}
-                      >
-                        Open Details
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </main>
-      </div>
+            )}
+          </main>
+        </div>
+      ) : (
+        <SubstitutionAuditor API_BASE={`${API_BASE}/substitution`} formatMarkdown={formatMarkdown} />
+      )}
     </div>
   );
 }

@@ -10,7 +10,7 @@ from backend.app.agent.graph import agent_graph
 from backend.app.agent.state import AgentState
 
 # Setup in-memory SQLite database for testing database behaviors
-TEST_DATABASE_URL = "sqlite:///./test_resilience.db"
+TEST_DATABASE_URL = "sqlite:///:memory:"
 test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 

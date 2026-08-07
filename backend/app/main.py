@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.api import documents, runs
+from backend.app.api import documents, runs, substitution
 from backend.app.init_db import init_database
 from backend.app.config import settings
 
@@ -12,8 +12,8 @@ except Exception as e:
     print(f"Warning: Database initialization failed: {str(e)}")
 
 app = FastAPI(
-    title="SuperDocs Analyst Agent - Task 1",
-    description="Backend service running stateful LangGraph workflows with human-in-the-loop gates.",
+    title="SuperDocs Analyst Agent - Task 1 & 2",
+    description="Backend service running stateful LangGraph workflows and SuperDocs integrations.",
     version="1.0.0"
 )
 
@@ -29,6 +29,7 @@ app.add_middleware(
 # Register routes
 app.include_router(documents.router, prefix="/api")
 app.include_router(runs.router, prefix="/api")
+app.include_router(substitution.router, prefix="/api/substitution")
 
 @app.get("/")
 def read_root():

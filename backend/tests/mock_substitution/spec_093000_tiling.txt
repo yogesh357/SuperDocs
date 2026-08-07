@@ -1,0 +1,14 @@
+SECTION 09 30 00 - TILING
+
+PART 2 - PRODUCTS
+
+2.1 CERAMIC TILE SPECIFICATIONS
+A. Ceramic Floor Tile:
+   1. Water Absorption: Less than 0.5% when tested in accordance with ASTM C373. (Clause 2.1.A.1)
+   2. Dynamic Coefficient of Friction (DCOF): Greater than or equal to 0.42 when tested in wet conditions in accordance with ANSI A137.1. (Clause 2.1.A.2)
+   3. Wear Rating: PEI IV or higher. (Clause 2.1.A.3)
+   4. Manufacturer/Product: Subject to compliance with requirements, provide "GrandClassic" by SpecTile Inc. or approved equivalent. (Clause 2.1.A.4)
+
+2.2 GROUT MATERIALS
+A. Epoxy Grout:
+   1. Chemical-resistant epoxy grout, water-cleanable, complying with ANSI A118.3. (Clause 2.2.B)
