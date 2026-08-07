@@ -67,11 +67,11 @@ class DeliverableSchema(BaseModel):
 
 # --- Database Helper for Stages ---
 
-def update_db_stage(run_id: str, stage_name: str, status: str, latency: float = 0.0, cost: float = 0.0):
+def update_db_stage(run_id: str, stage_name: str, status: str, latency: float = 0.0, cost: float = 0.0, state: Dict[str, Any] = None):
     db: Session = SessionLocal()
     try:
         run_uuid = uuid.UUID(run_id) if isinstance(run_id, str) else run_id
-        # Update Run current_stage
+        # Update Run current_stage and status
         run = db.query(Run).filter(Run.id == run_uuid).first()
         if run:
             run.current_stage = stage_name
@@ -79,6 +79,14 @@ def update_db_stage(run_id: str, stage_name: str, status: str, latency: float = 
                 run.status = "running"
             elif status == "failed":
                 run.status = "failed"
+            elif status == "paused":
+                run.status = "paused"
+            elif status == "completed" and stage_name == "Report Compilation":
+                run.status = "completed"
+            
+            if state:
+                run.graph_state = state
+                
             db.add(run)
 
         # Create or update RunStage
@@ -160,18 +168,23 @@ def classify_documents_node(state: AgentState) -> Dict[str, Any]:
             
         logs.append("Document Classification completed.")
         latency = time.time() - start_time
-        update_db_stage(run_id, "Document Classification", "completed", latency, total_cost)
-        
-        return {
+        state_update = {
             "documents": processed_docs,
             "logs": logs,
-            "cost_usd": state.get("cost_usd", 0.0) + total_cost
+            "cost_usd": state.get("cost_usd", 0.0) + total_cost,
+            "current_stage": "Document Classification"
         }
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Document Classification", "completed", latency, total_cost, full_updated_state)
+        
+        return state_update
     except Exception as e:
         db.rollback()
         logs.append(f"Error in Document Classification: {str(e)}")
-        update_db_stage(run_id, "Document Classification", "failed")
-        return {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        state_update = {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Document Classification", "failed", state=full_updated_state)
+        return state_update
     finally:
         db.close()
 
@@ -227,17 +240,22 @@ def extract_facts_node(state: AgentState) -> Dict[str, Any]:
             logs.append(f"Extracted facts from {doc['filename']}")
             
         latency = time.time() - start_time
-        update_db_stage(run_id, "Fact Extraction", "completed", latency, total_cost)
-        
-        return {
+        state_update = {
             "extracted_facts": extracted_facts,
             "logs": logs,
-            "cost_usd": state.get("cost_usd", 0.0) + total_cost
+            "cost_usd": state.get("cost_usd", 0.0) + total_cost,
+            "current_stage": "Fact Extraction"
         }
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Fact Extraction", "completed", latency, total_cost, full_updated_state)
+        
+        return state_update
     except Exception as e:
         logs.append(f"Error in Fact Extraction: {str(e)}")
-        update_db_stage(run_id, "Fact Extraction", "failed")
-        return {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        state_update = {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Fact Extraction", "failed", state=full_updated_state)
+        return state_update
 
 
 def check_conflicts_node(state: AgentState) -> Dict[str, Any]:
@@ -329,29 +347,30 @@ def check_conflicts_node(state: AgentState) -> Dict[str, Any]:
         # If there are conflicts that are still 'pending', we set state flags to trigger an interrupt
         pending_confs = [c for c in db_confs if c.human_decision == "pending"]
         
-        if pending_confs:
-            logs.append("Pending conflicts detected. Pausing process for human decision...")
-            update_db_stage(run_id, "Conflict Auditing", "paused", latency, total_cost)
-            # Mark the run as paused in the DB
-            run = db.query(Run).filter(Run.id == uuid.UUID(run_id)).first()
-            if run:
-                run.status = "paused"
-                db.commit()
-        else:
-            logs.append("Conflict Auditing completed with no pending conflicts.")
-            update_db_stage(run_id, "Conflict Auditing", "completed", latency, total_cost)
-            
-        return {
+        state_update = {
             "conflicts": conflicts_found,
             "conflicts_resolved": len(pending_confs) == 0,
             "logs": logs,
-            "cost_usd": state.get("cost_usd", 0.0) + total_cost
+            "cost_usd": state.get("cost_usd", 0.0) + total_cost,
+            "current_stage": "Conflict Auditing"
         }
+        full_updated_state = {**state, **state_update}
+
+        if pending_confs:
+            logs.append("Pending conflicts detected. Pausing process for human decision...")
+            update_db_stage(run_id, "Conflict Auditing", "paused", latency, total_cost, full_updated_state)
+        else:
+            logs.append("Conflict Auditing completed with no pending conflicts.")
+            update_db_stage(run_id, "Conflict Auditing", "completed", latency, total_cost, full_updated_state)
+            
+        return state_update
     except Exception as e:
         db.rollback()
         logs.append(f"Error in Conflict Auditing: {str(e)}")
-        update_db_stage(run_id, "Conflict Auditing", "failed")
-        return {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        state_update = {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Conflict Auditing", "failed", state=full_updated_state)
+        return state_update
     finally:
         db.close()
 
@@ -432,28 +451,30 @@ def check_compliance_node(state: AgentState) -> Dict[str, Any]:
         # Check if there are active flagged findings that are 'pending' human gate review
         pending_findings = [f for f in db_findings if f.status == "flagged" and f.human_decision == "pending"]
         
-        if pending_findings:
-            logs.append("Pending compliance flags require review. Pausing process...")
-            update_db_stage(run_id, "Compliance Audit", "paused", latency, total_cost)
-            run = db.query(Run).filter(Run.id == uuid.UUID(run_id)).first()
-            if run:
-                run.status = "paused"
-                db.commit()
-        else:
-            logs.append("Compliance Audit completed.")
-            update_db_stage(run_id, "Compliance Audit", "completed", latency, total_cost)
-            
-        return {
+        state_update = {
             "findings": findings_found,
             "findings_reviewed": len(pending_findings) == 0,
             "logs": logs,
-            "cost_usd": state.get("cost_usd", 0.0) + total_cost
+            "cost_usd": state.get("cost_usd", 0.0) + total_cost,
+            "current_stage": "Compliance Audit"
         }
+        full_updated_state = {**state, **state_update}
+
+        if pending_findings:
+            logs.append("Pending compliance flags require review. Pausing process...")
+            update_db_stage(run_id, "Compliance Audit", "paused", latency, total_cost, full_updated_state)
+        else:
+            logs.append("Compliance Audit completed.")
+            update_db_stage(run_id, "Compliance Audit", "completed", latency, total_cost, full_updated_state)
+            
+        return state_update
     except Exception as e:
         db.rollback()
         logs.append(f"Error in Compliance Audit: {str(e)}")
-        update_db_stage(run_id, "Compliance Audit", "failed")
-        return {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        state_update = {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Compliance Audit", "failed", state=full_updated_state)
+        return state_update
     finally:
         db.close()
 
@@ -531,26 +552,26 @@ def generate_deliverable_node(state: AgentState) -> Dict[str, Any]:
         db.add(db_deliv)
         
         # Update Run state to complete
-        run = db.query(Run).filter(Run.id == uuid.UUID(run_id)).first()
-        if run:
-            run.status = "completed"
-            db.add(run)
-            
         db.commit()
         logs.append("Deliverable report successfully generated and saved.")
         
         latency = time.time() - start_time
-        update_db_stage(run_id, "Report Compilation", "completed", latency, total_cost)
-        
-        return {
+        state_update = {
             "deliverable_markdown": content,
             "logs": logs,
-            "cost_usd": state.get("cost_usd", 0.0) + total_cost
+            "cost_usd": state.get("cost_usd", 0.0) + total_cost,
+            "current_stage": "Report Compilation"
         }
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Report Compilation", "completed", latency, total_cost, full_updated_state)
+        
+        return state_update
     except Exception as e:
         db.rollback()
         logs.append(f"Error in Report Compilation: {str(e)}")
-        update_db_stage(run_id, "Report Compilation", "failed")
-        return {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        state_update = {"errors": state.get("errors", []) + [str(e)], "logs": logs}
+        full_updated_state = {**state, **state_update}
+        update_db_stage(run_id, "Report Compilation", "failed", state=full_updated_state)
+        return state_update
     finally:
         db.close()
