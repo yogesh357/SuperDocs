@@ -1,0 +1,10 @@
+RAYBEAM LIGHTING - PRODUCT CUT SHEET
+
+PRODUCT: RayBeam LED Downlight
+MANUFACTURER: RayBeam Lighting Inc.
+
+TECHNICAL DATA:
+- Luminous Efficacy (IES LM-79): 125 lm/W
+- Color Rendering Index (CRI): 92 Ra
+- Lifespan (L70 LM-80): 60,000 hours
+- Dimming capability: 0-10V control compatibility

@@ -1,0 +1,5 @@
+PROJECT FINISH SCHEDULE
+ROOM | MATERIAL | SPEC SECTION | MANUFACTURER | PRODUCT | STATUS
+--- | --- | --- | --- | --- | ---
+Conference Room | Recessed Downlight | 26 51 19 | LumenCorp Ltd. | AuraGlow | SPECIFIED
+Reception | Recessed Downlight | 26 51 19 | LumenCorp Ltd. | AuraGlow | SPECIFIED

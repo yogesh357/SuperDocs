@@ -1,0 +1,10 @@
+SECTION 26 51 19 - LED INTERIOR LIGHTING
+
+PART 2 - PRODUCTS
+
+2.1 LIGHTING FIXTURE SPECIFICATIONS
+B. Recessed LED Downlights:
+   1. Luminous Efficacy: Greater than or equal to 120 lm/W when tested in accordance with IES LM-79. (Clause 2.1.B.1)
+   2. Color Rendering Index (CRI): Greater than or equal to 90 Ra. (Clause 2.1.B.2)
+   3. Rated Life (L70): Greater than or equal to 50,000 hours when tested in accordance with IES LM-80. (Clause 2.1.B.3)
+   4. Manufacturer/Product: Subject to compliance with requirements, provide "AuraGlow" by LumenCorp Ltd. or approved equivalent. (Clause 2.1.B.4)
