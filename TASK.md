@@ -1,4 +1,4 @@
-# TASK: SuperDocs Candidate Assignment
+# TASK
 
 This project implements two core integration tasks built on top of the SuperDocs API and LangGraph workflow orchestrator.
 
