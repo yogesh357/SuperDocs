@@ -3,12 +3,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 class Settings(BaseSettings):
-    GEMINI_API_KEY: str = Field(..., validation_alias="GEMINI_API_KEY")
+    GEMINI_API_KEY: str = Field("", validation_alias="GEMINI_API_KEY")
     DATABASE_URL: str = Field(..., validation_alias="DATABASE_URL")
     SUPERDOCS_API_KEY: str = Field(..., validation_alias="SUPERDOCS_API_KEY")
     PORT: int = Field(8000, validation_alias="PORT")
     HOST: str = Field("127.0.0.1", validation_alias="HOST")
     USE_PGVECTOR: bool = Field(False, validation_alias="USE_PGVECTOR")
+    OPENROUTER_API_KEY: str = Field("", validation_alias="OPENROUTER_API_KEY")
+    # OPENROUTER_MODEL: str = Field("google/gemini-3.7-flash", validation_alias="OPENROUTER_MODEL")
+    OPENROUTER_MODEL: str = Field("openrouter/free", validation_alias="OPENROUTER_MODEL")
 
     # Load environment variables from the root .env file
     model_config = SettingsConfigDict(

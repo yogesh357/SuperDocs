@@ -8,7 +8,8 @@ import google.generativeai as genai
 from backend.app.config import settings
 
 # Configure Gemini API
-genai.configure(api_key=settings.GEMINI_API_KEY)
+if settings.GEMINI_API_KEY:
+    genai.configure(api_key=settings.GEMINI_API_KEY)
  
 GEMINI_COSTS = {
     "gemini-flash-latest": {"input": 0.075 / 1_000_000, "output": 0.30 / 1_000_000},
@@ -56,13 +57,82 @@ def extract_text_from_file(file_path: str) -> str:
 def call_gemini_structured(
     prompt: str,
     response_schema: Type[BaseModel],
-    model_name: str = "gemini-flash-latest",
+    model_name: str = "gemini-1.5-flash",
     temperature: float = 0.1
 ) -> tuple[Dict[str, Any], int, int, float]:
     """
-    Call Gemini API and guarantee response adheres to Pydantic schema.
+    Call Gemini API or OpenRouter and guarantee response adheres to Pydantic schema.
     Returns: (parsed_json_dict, input_tokens, output_tokens, cost_usd)
     """
+    import requests
+    
+    openrouter_key = settings.OPENROUTER_API_KEY or os.environ.get("OPENROUTER_API_KEY")
+    if openrouter_key and openrouter_key.strip():
+        headers = {
+            "Authorization": f"Bearer {openrouter_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:8000",
+            "X-Title": "SuperDocs Task Analyst"
+        }
+        
+        # Default to the highly responsive Google Gemini 2.5 Flash Free model
+        model = settings.OPENROUTER_MODEL or os.environ.get("OPENROUTER_MODEL") or "google/gemini-2.0-flash-exp:free"
+        
+        schema_json = json.dumps(response_schema.model_json_schema())
+        system_instruction = (
+            "You are a parser. You must return a JSON object that adheres strictly to this JSON schema:\n"
+            f"{schema_json}\n\n"
+            "Do not include any markdown code blocks (like ```json), other text, or explanation. Return only raw JSON."
+        )
+        
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": prompt}
+            ],
+            "response_format": {"type": "json_object"},
+            "temperature": temperature
+        }
+        
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=45
+                )
+                if response.status_code == 200:
+                    res_json = response.json()
+                    choice = res_json["choices"][0]["message"]["content"].strip()
+                    
+                    # Clean up markdown code blocks if the model returned them
+                    if choice.startswith("```json"):
+                        choice = choice[7:]
+                    if choice.endswith("```"):
+                        choice = choice[:-3]
+                    choice = choice.strip()
+                    
+                    parsed_data = json.loads(choice)
+                    usage = res_json.get("usage", {})
+                    input_tokens = usage.get("prompt_tokens", 0)
+                    output_tokens = usage.get("completion_tokens", 0)
+                    return parsed_data, input_tokens, output_tokens, 0.0
+                else:
+                    print(f"OpenRouter API returned error {response.status_code}: {response.text}")
+                    if response.status_code == 429 and attempt < max_retries - 1:
+                        time.sleep((attempt + 1) * 3)
+                        continue
+            except Exception as e:
+                print(f"Error calling OpenRouter: {str(e)}")
+                if attempt < max_retries - 1:
+                    time.sleep((attempt + 1) * 3)
+                    continue
+        
+        return {"error": "Failed to call OpenRouter API"}, 0, 0, 0.0
+
     start_time = time.time()
     max_retries = 3
     

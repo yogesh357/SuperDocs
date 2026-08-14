@@ -50,8 +50,20 @@ Ensure you have Python 3.10+ and Node.js 18+ installed on your system.
    cd backend
    .venv\Scripts\activate
    ```
-2. Populate your `.env` file with the SuperDocs credentials:
+2. Populate your `.env` file with either Google AI Studio or OpenRouter credentials:
+
+   **Option A: Google AI Studio (100% Free)**
    ```env
+   GEMINI_API_KEY="AIzaSyYourFreeKeyHere"
+   SUPERDOCS_API_KEY="sk_your_key_here"
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/superdocs"
+   ```
+
+   **Option B: OpenRouter (100% Free Models)**
+   Create a free API key at [openrouter.ai](https://openrouter.ai/) (no credit card required) and configure:
+   ```env
+   OPENROUTER_API_KEY="sk-or-v1-your-openrouter-key-here"
+   OPENROUTER_MODEL="google/gemini-2.5-flash:free"
    SUPERDOCS_API_KEY="sk_your_key_here"
    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/superdocs"
    ```
