@@ -435,7 +435,7 @@ export default function SubstitutionAuditor({ API_BASE, formatMarkdown }) {
                               <span className="text-[9px] uppercase font-bold tracking-wider text-gray-500 mb-1">Original Text</span>
                               <div 
                                 className="text-xs text-gray-500 line-through leading-relaxed whitespace-pre-wrap"
-                                dangerouslySetInnerHTML={{ __html: ch.original_html || ch.original }}
+                                dangerouslySetInnerHTML={{ __html: ch.original_html || ch.original || ch.old_html || ch.old }}
                               />
                             </div>
                             {/* Proposed / Changed */}
@@ -443,7 +443,7 @@ export default function SubstitutionAuditor({ API_BASE, formatMarkdown }) {
                               <span className="text-[9px] uppercase font-bold tracking-wider text-emerald-500 mb-1">Staged Change</span>
                               <div 
                                 className="text-xs text-emerald-400 font-semibold leading-relaxed whitespace-pre-wrap"
-                                dangerouslySetInnerHTML={{ __html: ch.proposed_html || ch.proposed }}
+                                dangerouslySetInnerHTML={{ __html: ch.proposed_html || ch.proposed || ch.new_html || ch.new }}
                               />
                             </div>
                           </div>

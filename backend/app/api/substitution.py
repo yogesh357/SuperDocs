@@ -169,7 +169,7 @@ def execute_substitution_analysis(run_id: str, db_session: Session):
         prompt = (
             "You are a professional project architect. Compare the attached contractor substitution product cut sheet "
             f"against the Specification Section document (titled '{spec_title}'). Follow these rules carefully:\n"
-            "1. Extract every performance requirement from the Specification Section (e.g. water absorption, coefficient of friction, wear rating, grout type).\n"
+            "1. Extract every performance requirement from the Specification Section (e.g. technical metrics, ratings, manufacturers, wear/durability standards, materials).\n"
             "2. Cross-reference them line-by-line against the values listed in the proposed product cut sheet.\n"
             "3. Formulate a structured comparison table showing required value, proposed product value, spec clause, and compliance status (Met / Not Met / Unclear).\n"
             "4. Draft a formal architect's response letter (Accepting or Rejecting the substitution based on whether all specs are met). "
