@@ -1,0 +1,15 @@
+ACME SOFTWARE SOLUTIONS
+INVOICE #999
+
+Invoice Date: 2026-08-01
+Due Date: 2026-09-01
+Reference: SOW-101
+
+Line Items:
+Description: Developer consulting hours for Cloud Migration project (August)
+Hours: 40.0 hours
+Rate: $210.00 per hour
+Line Total: $8,400.00
+
+Total Due: $8,400.00
+Payment Method: Electronic Transfer

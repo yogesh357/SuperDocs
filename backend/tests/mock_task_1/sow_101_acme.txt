@@ -1,0 +1,10 @@
+STATEMENT OF WORK #101 (SOW-101)
+Under Master Services Agreement
+
+Project Name: Cloud Infrastructure Migration
+SOW Number: SOW-101
+Effective Date: 2026-01-01
+
+This SOW authorizes Developer hours for project implementation.
+Rates: Developer services are billed at the Master Services Agreement rate of $150.00/hr.
+Estimated Hours: 120 hours.

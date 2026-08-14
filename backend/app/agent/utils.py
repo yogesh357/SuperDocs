@@ -64,43 +64,50 @@ def call_gemini_structured(
     Returns: (parsed_json_dict, input_tokens, output_tokens, cost_usd)
     """
     start_time = time.time()
-    try:
-        model = genai.GenerativeModel(model_name)
-        
-        # Configure model to return structured JSON matching our Pydantic schema
-        generation_config = {
-            "response_mime_type": "application/json",
-            "response_schema": response_schema,
-            "temperature": temperature
-        }
-        
-        response = model.generate_content(
-            prompt,
-            generation_config=generation_config
-        )
-        
-        # Calculate tokens
-        # Note: In standard Gemini SDK, response.usage_metadata contains:
-        # prompt_token_count, candidates_token_count, total_token_count
-        input_tokens = 0
-        output_tokens = 0
-        if hasattr(response, "usage_metadata") and response.usage_metadata:
-            input_tokens = response.usage_metadata.prompt_token_count
-            output_tokens = response.usage_metadata.candidates_token_count
-            
-        # Calculate cost
-        rates = GEMINI_COSTS.get(model_name, GEMINI_COSTS["gemini-flash-latest"])
-        cost = (input_tokens * rates["input"]) + (output_tokens * rates["output"])
-        
+    max_retries = 3
+    
+    for attempt in range(max_retries):
         try:
-            parsed_data = json.loads(response.text)
-            return parsed_data, input_tokens, output_tokens, cost
-        except Exception as json_err:
-            # If JSON parsing fails, wrap raw text in a mock response or raise
-            print(f"JSON parsing of Gemini response failed: {response.text}")
-            return {"error": "Failed to parse JSON response from LLM", "raw_text": response.text}, input_tokens, output_tokens, cost
+            model = genai.GenerativeModel(model_name)
             
-    except Exception as e:
-        print(f"Error calling Gemini API: {str(e)}")
-        # Graceful fallback mock values for resilience/testing
-        return {"error": str(e)}, 0, 0, 0.0
+            # Configure model to return structured JSON matching our Pydantic schema
+            generation_config = {
+                "response_mime_type": "application/json",
+                "response_schema": response_schema,
+                "temperature": temperature
+            }
+            
+            response = model.generate_content(
+                prompt,
+                generation_config=generation_config
+            )
+            
+            # Calculate tokens
+            input_tokens = 0
+            output_tokens = 0
+            if hasattr(response, "usage_metadata") and response.usage_metadata:
+                input_tokens = response.usage_metadata.prompt_token_count
+                output_tokens = response.usage_metadata.candidates_token_count
+                
+            # Calculate cost
+            rates = GEMINI_COSTS.get(model_name, GEMINI_COSTS["gemini-flash-latest"])
+            cost = (input_tokens * rates["input"]) + (output_tokens * rates["output"])
+            
+            try:
+                parsed_data = json.loads(response.text)
+                return parsed_data, input_tokens, output_tokens, cost
+            except Exception as json_err:
+                print(f"JSON parsing of Gemini response failed: {response.text}")
+                return {"error": "Failed to parse JSON response from LLM", "raw_text": response.text}, input_tokens, output_tokens, cost
+                
+        except Exception as e:
+            err_str = str(e).lower()
+            if ("429" in err_str or "quota" in err_str or "rate limit" in err_str) and attempt < max_retries - 1:
+                # Quota exceeded or rate limited. Sleep and retry with backoff.
+                sleep_time = (attempt + 1) * 3
+                print(f"Gemini API rate limited/quota exceeded. Retrying in {sleep_time}s... (Attempt {attempt+1}/{max_retries})")
+                time.sleep(sleep_time)
+                continue
+                
+            print(f"Error calling Gemini API: {str(e)}")
+            return {"error": str(e)}, 0, 0, 0.0

@@ -1,0 +1,12 @@
+MASTER SERVICES AGREEMENT
+BETWEEN
+ACME SOFTWARE SOLUTIONS AND GLOBALTECH INC.
+
+1. Services and Rates
+Acme Software Solutions agrees to provide consulting and engineering services. The primary personnel assigned to the work will be Developer roles. Hourly rates for Developer services are agreed at $150.00 per hour.
+
+2. Payment Terms
+Invoices shall be issued monthly. GlobalTech Inc. shall make payments within 30 days of receiving a valid invoice (Net 30 payment terms).
+
+3. Statement of Work (SOW) Requirement
+All project scopes must be authorized under a valid Statement of Work (SOW) executed by both parties.

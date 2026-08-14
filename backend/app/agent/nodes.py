@@ -132,9 +132,13 @@ def classify_documents_node(state: AgentState) -> Dict[str, Any]:
     total_cost = 0.0
     
     try:
-        # Fetch all uploaded documents for this run from database
-        # (For this assignment, we assume documents have been uploaded via API to DB)
-        docs = db.query(Document).all()
+        # Fetch only documents belonging to the active session to avoid mixing files
+        run_uuid = uuid.UUID(run_id) if isinstance(run_id, str) else run_id
+        run = db.query(Run).filter(Run.id == run_uuid).first()
+        if run and run.session_id:
+            docs = db.query(Document).filter(Document.session_id == run.session_id).all()
+        else:
+            docs = db.query(Document).all()
         for doc in docs:
             # If document doesn't have a classified type, classify it
             if doc.file_type == "unknown" or not doc.file_type:

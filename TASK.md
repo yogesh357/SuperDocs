@@ -21,6 +21,7 @@ SuperDocs-Task/
 │   │   ├── main.py               # FastAPI server entrypoint
 │   │   └── init_db.py            # Self-healing database schema migrations
 │   ├── tests/
+│   │   ├── mock_task_1/          # Mock Contract/Invoice Files (Task 1)
 │   │   ├── mock_substitution/    # Mock Set 1: Ceramic Tiling Files (Task 2)
 │   │   ├── mock_substitution_2/  # Mock Set 2: Carpet Tiling Files (Task 2)
 │   │   ├── mock_substitution_3/  # Mock Set 3: LED Downlights Files (Task 2)
@@ -75,7 +76,18 @@ cd backend
 .venv\Scripts\python -m pytest
 ```
 
-### 2. Manual Testing (Task 2)
+### 2. Manual Testing (Task 1)
+1. Navigate to the main Analyst dashboard (**http://localhost:5173/**).
+2. Click **Add Document** and upload the mock files found in [backend/tests/mock_task_1/](file:///c:/My-Projects/My-Assignments/SuperDocs-Task/backend/tests/mock_task_1/):
+   * `contract_acme_software.txt`
+   * `sow_101_acme.txt`
+   * `invoice_acme_august.txt`
+3. Click **Start Audit Run**. 
+4. Watch the agent classify each document, extract metadata facts in real-time, and automatically pause in the `"paused"` state because of the rate discrepancy conflict ($210 invoice rate vs $150 SOW rate).
+5. Interactively resolve the conflict in the UI by choosing either the contract or invoice rate, and submit the decision.
+6. The agent will resume, evaluate the $200/hr corporate max rate compliance violation, and output the final audit markdown report!
+
+### 3. Manual Testing (Task 2)
 1. Switch to the **AEC Substitution** tab in the header.
 2. In the left panel, upload any of the three mock test folders located in `backend/tests/`:
    * **Ceramic Tiling** (`mock_substitution/`)
