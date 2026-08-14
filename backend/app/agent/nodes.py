@@ -45,10 +45,15 @@ class InvoiceFactsSchema(BaseModel):
     billed_items: List[BilledItem] = Field(description="Breakdown of billed items")
     total_amount_usd: float = Field(description="Total amount billed on invoice")
 
+class ConflictItem(BaseModel):
+    conflict_description: str = Field(description="Brief explanation of the rate or terms discrepancy")
+    expected_value: str = Field(description="Expected value from contract/SOW (e.g. '$150/hr')")
+    actual_value: str = Field(description="Actual value billed on invoice (e.g. '$210/hr')")
+
 class ConflictAnalysisSchema(BaseModel):
     has_conflicts: bool = Field(description="True if invoice details disagree with agreement terms")
-    conflicts: List[Dict[str, Any]] = Field(
-        description="List of conflicts, each with: 'conflict_description', 'expected_value', 'actual_value'"
+    conflicts: List[ConflictItem] = Field(
+        description="List of detected conflicts, each detailing the mismatch"
     )
 
 class ComplianceAnalysisSchema(BaseModel):
